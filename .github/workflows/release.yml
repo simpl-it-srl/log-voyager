@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
   build-and-release:
@@ -34,16 +35,6 @@ jobs:
       - name: Lint code
         run: npm run lint
 
-      - name: Build project
-        run: npm run build
-
-      - name: Create distribution archive
-        run: |
-          cd dist
-          zip -r ../log-voyager-dist.zip .
-          tar -czf ../log-voyager-dist.tar.gz .
-          cd ..
-
       - name: Get version
         id: get_version
         run: |
@@ -53,7 +44,38 @@ jobs:
             echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create Release and Upload Assets
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ steps.get_version.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.get_version.outputs.version }}
+            type=semver,pattern={{major}},value=${{ steps.get_version.outputs.version }}
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.get_version.outputs.version }}
@@ -61,27 +83,38 @@ jobs:
           body: |
             ## 🚀 Log Voyager ${{ steps.get_version.outputs.version }}
 
-            ### Download Options
+            ### Docker Image
 
-            - **ZIP Archive**: `log-voyager-dist.zip`
-            - **TAR.GZ Archive**: `log-voyager-dist.tar.gz`
+            Pull and run the Docker container:
 
-            ### Deployment
+            ```bash
+            docker pull ghcr.io/${{ github.repository }}:${{ steps.get_version.outputs.version }}
+            docker run -d -p 8080:80 ghcr.io/${{ github.repository }}:${{ steps.get_version.outputs.version }}
+            ```
 
-            1. Download and extract the archive
-            2. Serve the contents using any static web server
-            3. Or use Docker: `docker build -t log-voyager .`
+            Or use the `latest` tag:
+
+            ```bash
+            docker pull ghcr.io/${{ github.repository }}:latest
+            docker run -d -p 8080:80 ghcr.io/${{ github.repository }}:latest
+            ```
+
+            Then open your browser to: http://localhost:8080
+
+            ### Available Tags
+
+            - `${{ steps.get_version.outputs.version }}` - This specific version
+            - `latest` - Always points to the latest release
 
             ### What's Included
 
             - Production-optimized build
             - PWA support for offline usage
+            - Nginx web server
             - All assets and dependencies bundled
+            - Ready to deploy container
 
-            For installation instructions, see [README.md](https://github.com/${{ github.repository }}/blob/main/README.md)
-          files: |
-            log-voyager-dist.zip
-            log-voyager-dist.tar.gz
+            For more information, see [README.md](https://github.com/${{ github.repository }}/blob/main/README.md)
           draft: false
           prerelease: false
         env:
