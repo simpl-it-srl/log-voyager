@@ -1,0 +1,52 @@
+# Git
+.git
+.gitignore
+
+# Node modules
+node_modules
+npm-debug.log
+
+# Build outputs
+dist
+.cache
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs
+*.log.*
+giant_server.log
+
+# Android
+android
+
+# Test files
+*.test.*
+*.spec.*
+
+# Documentation
+README.md
+docs
+
+# CI/CD
+.github
+
+# Docker
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# Misc
+*.md
+.env*
+.prettierrc
+.eslintrc*

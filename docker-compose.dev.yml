@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  log-voyager-dev:
+    # Development: Build locally and mount source for hot-reload
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+
+    container_name: log-voyager-dev
+
+    ports:
+      - "5173:5173"  # Vite dev server default port
+
+    volumes:
+      # Mount source code for hot-reload
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.app.json:/app/tsconfig.app.json
+      - ./package.json:/app/package.json
+      # Exclude node_modules to use container's version
+      - /app/node_modules
+
+    command: npm run dev -- --host 0.0.0.0
+
+    environment:
+      - NODE_ENV=development
+      - VITE_HOST=0.0.0.0
+
+    restart: unless-stopped
+
+    labels:
+      - "com.log-voyager.description=Log Voyager - Development Instance"
+      - "com.log-voyager.environment=development"
+
+    networks:
+      - log-voyager-network
+
+networks:
+  log-voyager-network:
+    driver: bridge

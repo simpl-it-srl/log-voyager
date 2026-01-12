@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  log-voyager:
+    # Production: Use pre-built image from GitHub Container Registry
+    image: ghcr.io/simpl-it-srl/log-voyager:latest
+
+    container_name: log-voyager-prod
+
+    ports:
+      - "80:80"
+
+    restart: always
+
+    environment:
+      - NGINX_HOST=logvoyager.cc
+      - NGINX_PORT=80
+
+    labels:
+      - "com.log-voyager.description=Log Voyager - Production Instance"
+      - "com.log-voyager.environment=production"
+
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Resource limits for production
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+    networks:
+      - log-voyager-network
+
+networks:
+  log-voyager-network:
+    driver: bridge

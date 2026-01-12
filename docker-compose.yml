@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  log-voyager:
+    # Option 1: Build from local Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # Option 2: Use pre-built image from GitHub Container Registry
+    # Uncomment the line below and comment out the 'build' section above to use GHCR image
+    # image: ghcr.io/simpl-it-srl/log-voyager:latest
+
+    container_name: log-voyager
+
+    ports:
+      - "8080:80"
+
+    restart: unless-stopped
+
+    environment:
+      # Nginx configuration (if needed)
+      - NGINX_HOST=localhost
+      - NGINX_PORT=80
+
+    labels:
+      - "com.log-voyager.description=Log Voyager - Analyze gigabyte-sized log files instantly"
+      - "com.log-voyager.version=1.0.0"
+
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    networks:
+      - log-voyager-network
+
+networks:
+  log-voyager-network:
+    driver: bridge
