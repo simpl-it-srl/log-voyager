@@ -105,7 +105,7 @@ export default function App() {
   };
 
   const handlePasteClick = async () => {
-    try { const text = await navigator.clipboard.readText(); if (!text) { alert('Clipboard is empty'); return; } processPastedText(text); } catch (err) { console.warn("Clipboard access denied"); setShowPasteModal(true); }
+    try { const text = await navigator.clipboard.readText(); if (!text) { alert('Clipboard is empty'); return; } processPastedText(text); } catch { console.warn("Clipboard access denied"); setShowPasteModal(true); }
   };
 
   const processPastedText = (text: string) => { const blob = new Blob([text], { type: 'text/plain' }); const f = new File([blob], "clipboard_content.log", { type: "text/plain", lastModified: Date.now() }); handleFile(f); setShowPasteModal(false); };
@@ -117,7 +117,7 @@ export default function App() {
     const reader = new FileReader();
     const blob = fileToRead.slice(offset, offset + CHUNK_SIZE);
     reader.onload = (e) => {
-      const text = e.target?.result as string; if (!text) return; let newLines = text.split('\n'); if (offset > 0) newLines.shift(); if (offset + CHUNK_SIZE < fileToRead.size) newLines.pop();
+      const text = e.target?.result as string; if (!text) return; const newLines = text.split('\n'); if (offset > 0) newLines.shift(); if (offset + CHUNK_SIZE < fileToRead.size) newLines.pop();
       setLines(newLines); setCurrentOffset(offset); setPercentage((offset / fileToRead.size) * 100); setIsLoading(false);
       if (pendingScrollLine === null && bottomRef.current?.parentElement) bottomRef.current.parentElement.scrollTop = 0;
     };
@@ -143,7 +143,7 @@ export default function App() {
 
   const filteredLines = useMemo(() => {
     if (!focusMode || !searchTerm) return lines;
-    if (useRegex) { try { const regex = new RegExp(searchTerm, caseSensitive ? '' : 'i'); return lines.filter(l => regex.test(l)); } catch (e) { return lines; } }
+    if (useRegex) { try { const regex = new RegExp(searchTerm, caseSensitive ? '' : 'i'); return lines.filter(l => regex.test(l)); } catch { return lines; } }
     return lines.filter(l => caseSensitive ? l.includes(searchTerm) : l.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [lines, focusMode, searchTerm, useRegex, caseSensitive]);
 
