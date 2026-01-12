@@ -23,7 +23,7 @@ const LogLine = ({ content, number, highlight, isBookmarked, onToggleBookmark, i
         if (!highlight) return <span className="text-slate-400">{content}</span>;
         let parts = [];
         if (useRegex) {
-            try { parts = content.split(new RegExp(`(${highlight})`, caseSensitive ? 'g' : 'gi')); } catch (e) { return <span className="text-slate-400">{content}</span>; }
+            try { parts = content.split(new RegExp(`(${highlight})`, caseSensitive ? 'g' : 'gi')); } catch { return <span className="text-slate-400">{content}</span>; }
         } else {
             const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             parts = content.split(new RegExp(`(${escapedHighlight})`, caseSensitive ? 'g' : 'gi'));
@@ -36,7 +36,7 @@ const LogLine = ({ content, number, highlight, isBookmarked, onToggleBookmark, i
         });
     };
 
-    const formatJson = () => { try { return JSON.stringify(JSON.parse(jsonMatch![0]), null, 2); } catch (e) { return null; } };
+    const formatJson = () => { try { return JSON.stringify(JSON.parse(jsonMatch![0]), null, 2); } catch { return null; } };
 
     let lineStyle = 'border-l-2 border-transparent hover:bg-white/5';
     let numStyle = 'text-slate-600 hover:text-[#00f3ff] cursor-pointer';

@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 
 // --- Komponent: Settings Modal ---
-export const SettingsModal = ({ onClose, settings, onUpdate }: any) => {
+export const SettingsModal = ({ onClose, settings, onUpdate }: { onClose: () => void, settings: { fontSize: string; lineWrap: boolean }, onUpdate: (settings: { fontSize: string; lineWrap: boolean }) => void }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200 font-jetbrains">
             <div className="bg-[#0d1117] w-full max-w-sm rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
